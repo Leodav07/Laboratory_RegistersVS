@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <cstring>
 #include <string>
+#include <iostream>
 
 std::vector<char> FileManager::serializeStudent(const Student &st)
 {
@@ -36,30 +37,52 @@ std::vector<char> FileManager::serializeStudent(const Student &st)
 
 Student FileManager::deserializeStudent(const std::vector<char> &buf)
 {
-    const char *p = buf.data();
-    uint32_t totalSize = *reinterpret_cast<const uint32_t *>(p);
-    p += sizeof(uint32_t);
+    try
+    {
+        if (buf.size() < sizeof(uint32_t))
+        {
+            throw std::runtime_error("The buffer is very short to read header.");
+        }
+        const char *p = buf.data();
+        uint32_t totalSize = *reinterpret_cast<const uint32_t *>(p);
+        p += sizeof(uint32_t);
 
-    Student st;
-    std::memcpy(st.account, p, sizeof(st.account));
-    p += sizeof(st.account);
+        if (totalSize < (sizeof(Student::account) + sizeof(Student::phoneNumber) +
+                         sizeof(uint32_t) + sizeof(Student::entryDate) + sizeof(bool)))
+        {
+            throw std::runtime_error("TotalSize doesn't have the minimum size required.");
+        }
 
-    size_t nameLength = totalSize - (sizeof(Student::account) + sizeof(Student::phoneNumber) +
-                                     sizeof(uint32_t) + sizeof(Student::entryDate) + sizeof(bool));
-    std::string name(p, nameLength);
-    st.name = name;
-    p += nameLength;
+        if (buf.size() < totalSize + sizeof(uint32_t))
+        {
+            throw std::runtime_error("Buffer is incomplete according to TotalSize.");
+        }
+        Student st;
+        std::memcpy(st.account, p, sizeof(st.account));
+        p += sizeof(st.account);
 
-    std::memcpy(st.phoneNumber, p, sizeof(st.phoneNumber));
-    p += sizeof(st.phoneNumber);
+        size_t nameLength = totalSize - (sizeof(Student::account) + sizeof(Student::phoneNumber) +
+                                         sizeof(uint32_t) + sizeof(Student::entryDate) + sizeof(bool));
+        std::string name(p, nameLength);
+        st.name = name;
+        p += nameLength;
 
-    st.age = *reinterpret_cast<const uint32_t *>(p);
-    p += sizeof(uint32_t);
+        std::memcpy(st.phoneNumber, p, sizeof(st.phoneNumber));
+        p += sizeof(st.phoneNumber);
 
-    std::memcpy(st.entryDate, p, sizeof(st.entryDate));
-    p += sizeof(st.entryDate);
+        st.age = *reinterpret_cast<const uint32_t *>(p);
+        p += sizeof(uint32_t);
 
-    st.isActive = *reinterpret_cast<const bool *>(p);
+        std::memcpy(st.entryDate, p, sizeof(st.entryDate));
+        p += sizeof(st.entryDate);
 
-    return st;
+        st.isActive = *reinterpret_cast<const bool *>(p);
+
+        return st;
+    }
+    catch (std::runtime_error &e)
+    {
+        std::cerr << "Error: " << e.what() << std::endl;
+        throw;
+    }
 }
