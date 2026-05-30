@@ -1,6 +1,7 @@
 #include "FileManager.hpp"
 #include <cstdint>
 #include <cstring>
+#include <string>
 
 std::vector<char> FileManager::serializeStudent(const Student &st)
 {
@@ -33,6 +34,32 @@ std::vector<char> FileManager::serializeStudent(const Student &st)
     return record;
 }
 
-Student FileManager::deserializeStudent(std::vector<char> &buf)
+Student FileManager::deserializeStudent(const std::vector<char> &buf)
 {
+    const char *p = buf.data();
+    uint32_t totalSize = *reinterpret_cast<const uint32_t *>(p);
+    p += sizeof(uint32_t);
+
+    Student st;
+    std::memcpy(st.account, p, sizeof(st.account));
+    p += sizeof(st.account);
+
+    size_t nameLength = totalSize - (sizeof(Student::account) + sizeof(Student::phoneNumber) +
+                                     sizeof(uint32_t) + sizeof(Student::entryDate) + sizeof(bool));
+    std::string name(p, nameLength);
+    st.name = name;
+    p += nameLength;
+
+    std::memcpy(st.phoneNumber, p, sizeof(st.phoneNumber));
+    p += sizeof(st.phoneNumber);
+
+    st.age = *reinterpret_cast<const uint32_t *>(p);
+    p += sizeof(uint32_t);
+
+    std::memcpy(st.entryDate, p, sizeof(st.entryDate));
+    p += sizeof(st.entryDate);
+
+    st.isActive = *reinterpret_cast<const bool *>(p);
+
+    return st;
 }

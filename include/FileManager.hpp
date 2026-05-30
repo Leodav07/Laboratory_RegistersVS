@@ -14,7 +14,7 @@ public:
     FileManager();
 
     std::vector<char> serializeStudent(const Student &st);
-    Student deserializeStudent(std::vector<char> &buf);
+    Student deserializeStudent(const std::vector<char> &buf);
 
     ~FileManager();
 };
