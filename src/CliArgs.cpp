@@ -1,9 +1,14 @@
 #include "CliArgs.hpp"
-#include <format>
 #include <iostream>
 
 void CliArgs::printUsage()
 {
+    std::cout << "Uso: " << program << " Interfaz de Linea de Comandos." << '\n'
+              << "Agregar registro/s: --agregar | \"archivo.json\" -> (Obligatorio, sin comillas)." << '\n'
+              << "Eliminar registro por No. de Cuenta: --eliminar | \"No. de Cuenta\" -> (Obligatorio, sin comillas)." << '\n'
+              << "Buscar registro por No. de Cuenta: --buscar | \"No. de Cuenta\" -> (Obligatorio, sin comillas)." << '\n'
+              << "Actualizar registro: --actualizar | \"archivo.json\" -> (Obligatorio, sin comillas)." << '\n'
+              << "Clean-Up: --clean-up" << std::endl;
 }
 
 void CliArgs::parse(int argc, const char *argv[])
@@ -14,27 +19,27 @@ void CliArgs::parse(int argc, const char *argv[])
     {
         std::string command = argv[1];
 
-        if (command == "agregar")
+        if (command == "--agregar")
         {
             filePath = argv[2];
             cliCommand_ = CliCommand::AddRecord;
         }
-        else if (command == "eliminar")
+        else if (command == "--eliminar")
         {
             accNumber = argv[2];
             cliCommand_ = CliCommand::RemoveRecord;
         }
-        else if (command == "buscar")
+        else if (command == "--buscar")
         {
             accNumber = argv[2];
             cliCommand_ = CliCommand::SearchRecord;
         }
-        else if (command == "actualizar")
+        else if (command == "--actualizar")
         {
             filePath = argv[2];
             cliCommand_ = CliCommand::UpdateRecord;
         }
-        else if (command == "clean-up")
+        else if (command == "--clean-up")
         {
             cliCommand_ = CliCommand::CleanUp;
         }
@@ -48,7 +53,7 @@ void CliArgs::parse(int argc, const char *argv[])
     else if (argc == 2)
     {
         std::string command = argv[1];
-        if (command == "clean-up")
+        if (command == "--clean-up")
         {
             cliCommand_ = CliCommand::CleanUp;
         }
