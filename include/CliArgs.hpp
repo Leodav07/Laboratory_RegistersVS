@@ -18,6 +18,12 @@ public:
     {
         return accNumber;
     }
+
+    std::optional<CliCommand> getCliCommand() const
+    {
+        return cliCommand_;
+    }
+    
     bool isGood() { return good; };
 
 private:

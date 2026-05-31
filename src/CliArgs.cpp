@@ -47,6 +47,7 @@ void CliArgs::parse(int argc, const char *argv[])
         {
             std::cout << "Expected commands: " << '\n'
                       << std::endl;
+            cliCommand_ = std::nullopt;
             good = false;
         }
     }
@@ -59,6 +60,7 @@ void CliArgs::parse(int argc, const char *argv[])
         }
         else
         {
+            cliCommand_ = std::nullopt;
             good = false;
         }
     }
@@ -66,10 +68,12 @@ void CliArgs::parse(int argc, const char *argv[])
     {
         std::cout << "Expected commands." << '\n'
                   << std::endl;
+        cliCommand_ = std::nullopt;
         good = false;
     }
     else
     {
+        cliCommand_ = std::nullopt;
         good = false;
     }
 }
