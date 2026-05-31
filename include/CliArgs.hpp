@@ -6,7 +6,7 @@ class CliArgs
 {
 public:
     CliArgs(int argc, const char *argv[]) { parse(argc, argv); };
-    ~CliArgs();
+
     void printUsage();
 
     std::string getFile()
@@ -23,7 +23,7 @@ public:
     {
         return cliCommand_;
     }
-    
+
     bool isGood() { return good; };
 
 private:
