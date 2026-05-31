@@ -5,5 +5,6 @@ enum CliCommand
     AddRecord,
     RemoveRecord,
     SearchRecord,
-    UpdateRecord
+    UpdateRecord,
+    CleanUp
 };
