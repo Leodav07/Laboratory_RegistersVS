@@ -86,3 +86,17 @@ Student FileManager::deserializeStudent(const std::vector<char> &buf)
         throw;
     }
 }
+
+void FileManager::InsertSort(std::vector<Index> &index, Index inx)
+{
+    index.push_back(inx);
+    size_t i = index.size() - 1;
+
+    while (i > 0 && memcmp(index[i - 1].account, index[i].account, sizeof(inx)) > 0)
+    {
+        Index temp = index[i];
+        index[i] = index[i - 1];
+        index[i - 1] = temp;
+        i--;
+    }
+}
