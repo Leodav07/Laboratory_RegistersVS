@@ -1,9 +1,6 @@
 #include "FileManager.hpp"
-#include <cstdint>
 #include <cstring>
-#include <string>
 #include <iostream>
-#include <fstream>
 
 std::vector<char> FileManager::serializeStudent(const Student &st)
 {
@@ -104,4 +101,26 @@ void FileManager::InsertSort(std::vector<Index> &index, Index inx)
 
 std::optional<std::vector<Index>> FileManager::loadIndex(std::string &indxFile)
 {
+    std::ifstream file(indxFile, std::ios::binary);
+    if (!file.is_open())
+    {
+        std::cerr << "Error: The file ('" << indxFile << "') cannot be open." << std::endl;
+        return std::nullopt;
+    }
+
+    Index inx;
+    std::vector<Index> index;
+
+    while (file.read(reinterpret_cast<char *>(&inx), sizeof(inx)))
+    {
+        index.push_back(inx);
+    }
+
+    if (file.bad() || (file.fail() && !file.eof()))
+    {
+        std::cerr << "Format Error / Critical System Error." << std::endl;
+        return std::nullopt;
+    }
+
+    return index;
 }
