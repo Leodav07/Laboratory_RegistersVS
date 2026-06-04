@@ -99,12 +99,12 @@ void FileManager::InsertSort(std::vector<Index> &index, Index inx)
     }
 }
 
-std::optional<std::vector<Index>> FileManager::loadIndex(std::string &indxFile)
+std::optional<std::vector<Index>> FileManager::loadIndex(const std::string &indxFile)
 {
     std::ifstream file(indxFile, std::ios::binary);
     if (!file.is_open())
     {
-        std::cerr << "Error: The file ('" << indxFile << "') cannot be open." << std::endl;
+        std::cerr << "Error: The file ('" << indxFile << "') cannot open." << std::endl;
         return std::nullopt;
     }
 
@@ -123,4 +123,27 @@ std::optional<std::vector<Index>> FileManager::loadIndex(std::string &indxFile)
     }
 
     return index;
+}
+
+bool FileManager::saveIndex(std::vector<Index> &index, const std::string &indxFile)
+{
+    std::ofstream file(indxFile, std::ios::binary);
+
+    if (!file.is_open())
+    {
+        std::cerr << "Error: The file ('" << indxFile << "') cannot open." << std::endl;
+        return false;
+    }
+
+    for (const auto &indx : index)
+    {
+        file.write(reinterpret_cast<const char *>(&indx), sizeof(indx));
+    }
+
+    if (!file.good())
+    {
+        std::cerr << "Critical Error: Index saving operation failed." << std::endl;
+        return false;
+    }
+    return true;
 }

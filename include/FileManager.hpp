@@ -10,8 +10,8 @@
 class FileManager
 {
 private:
-    std::optional<std::vector<Index>> loadIndex(std::string &indxFile);
-    bool saveIndex(std::string &indxFile);
+    std::optional<std::vector<Index>> loadIndex(const std::string &indxFile);
+    bool saveIndex(std::vector<Index> &index, const std::string &indxFile);
     std::string getIndxName(std::string fileName);
 
 public:
