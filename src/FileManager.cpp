@@ -147,3 +147,13 @@ bool FileManager::saveIndex(std::vector<Index> &index, const std::string &indxFi
     }
     return true;
 }
+
+std::optional<std::string> FileManager::getIndxName(std::string fileName)
+{
+    size_t dotPos = fileName.find_first_of('.');
+    if (dotPos == std::string::npos)
+    {
+        return std::nullopt;
+    }
+    return fileName.substr(0, dotPos);
+}
