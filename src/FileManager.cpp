@@ -3,6 +3,7 @@
 #include <cstring>
 #include <string>
 #include <iostream>
+#include <fstream>
 
 std::vector<char> FileManager::serializeStudent(const Student &st)
 {
@@ -99,4 +100,8 @@ void FileManager::InsertSort(std::vector<Index> &index, Index inx)
         index[i - 1] = temp;
         i--;
     }
+}
+
+std::optional<std::vector<Index>> FileManager::loadIndex(std::string &indxFile)
+{
 }
