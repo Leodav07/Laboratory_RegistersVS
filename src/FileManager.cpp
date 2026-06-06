@@ -1,6 +1,9 @@
 #include "FileManager.hpp"
 #include <cstring>
 #include <iostream>
+#include <json.hpp>
+
+namespace nl = nlohmann;
 
 std::vector<char> FileManager::serializeStudent(const Student &st)
 {
@@ -99,6 +102,19 @@ void FileManager::InsertSort(std::vector<Index> &index, Index inx)
     }
 }
 
+void FileManager::InsertSort(std::vector<Index> &index)
+{
+    size_t i = index.size() - 1;
+
+    while (i > 0 && memcmp(index[i - 1].account, index[i].account, sizeof(Index)) > 0)
+    {
+        Index temp = index[i];
+        index[i] = index[i - 1];
+        index[i - 1] = temp;
+        i--;
+    }
+}
+
 std::optional<std::vector<Index>> FileManager::loadIndex(const std::string &indxFile)
 {
     std::ifstream file(indxFile, std::ios::binary);
@@ -156,4 +172,95 @@ std::optional<std::string> FileManager::getIndxName(std::string fileName)
         return std::nullopt;
     }
     return fileName.substr(0, dotPos);
+}
+
+bool FileManager::IndexManager(std::string &fileName, std::vector<Index> &idx)
+{
+    auto indxNameFile = getIndxName(fileName);
+
+    if (!indxNameFile.has_value())
+    {
+        std::cerr << "Error: Name of file is not valid. Please check and try again. (Expected .json)" << std::endl;
+        return false;
+    }
+
+    auto index = loadIndex(indxNameFile.value());
+
+    if (!index.has_value())
+    {
+        return false;
+    }
+    for (const auto &i : idx)
+    {
+        index.value().push_back(i);
+    }
+    InsertSort(index.value());
+
+    return saveIndex(index.value(), indxNameFile.value());
+}
+
+bool FileManager::IndexManager(std::string &fileName, std::string &fileIndxName)
+{
+    auto index = loadIndex(fileIndxName);
+
+    if (!index.has_value())
+    {
+        std::cerr << "Error: Name of file is not valid. Please check and try again. (Expected .idx)" << std::endl;
+        return false;
+    }
+
+    InsertSort(index.value());
+}
+
+std::optional<std::vector<Student>> FileManager::jsonToStruct(std::string &jsonFile)
+{
+    try
+    {
+        nl::json studentsJson = nl::json::parse(jsonFile);
+
+        std::vector<Student> students;
+
+        if (studentsJson.is_array()) // First pass
+        {
+            for (auto &item : studentsJson)
+            {
+                Student st;
+                if (item.contains("account") && item.at("account").is_string())
+                {
+                    std::string account = item.at("account").get<std::string>();
+                    if (account.size() != 10)
+                    {
+                        std::cerr << "Error: The account number (" << account << ") doesn't have ten (10) characters exactly." << std::endl;
+                        return std::nullopt;
+                    }
+                    for (int i = 0; i < realIndex.size(); i++)
+                    {
+                        if (account == std::string(realIndex[i].account, 10))
+                        {
+                            std::cerr << "Error: The account: " << account << " already exists. There can't exists duplicates." << std::endl;
+                            return std::nullopt;
+                        }
+                    }
+                }
+                else
+                {
+                    return std::nullopt;
+                }
+
+                std::string account = item.at("account").get<std::string>();
+
+                if (!item.contains("name") || !item.at("name").is_string())
+                {
+                    std::cerr << "Error: The student with account number: (" << account << ") does not contain 'name' field or 'name' field is not a string type." << std::endl;
+                    return std::nullopt;
+                }
+            }
+        }
+    }
+    catch (nl::json::parse_error &p)
+    {
+        std::cerr << "Error: Parse error in byte: " << p.byte << '\n'
+                  << "Description: " << p.what() << std::endl;
+        return std::nullopt;
+    }
 }

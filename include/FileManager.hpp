@@ -11,17 +11,19 @@ class FileManager
 {
 private:
     std::optional<std::vector<Index>> loadIndex(const std::string &indxFile);
-    bool saveIndex(std::vector<Index> &index, const std::string &indxFile);
     std::optional<std::string> getIndxName(std::string fileName);
+    std::vector<Index> realIndex;
 
 public:
     FileManager();
-
     std::vector<char> serializeStudent(const Student &st);
     Student deserializeStudent(const std::vector<char> &buf);
     void InsertSort(std::vector<Index> &index, Index inx);
-    bool IndexManager(std::string &fileName); // If the user doesn't specify index file.
+    void InsertSort(std::vector<Index> &index);
+    bool IndexManager(std::string &fileName, std::vector<Index> &idx); // If the user doesn't specify index file.
     bool IndexManager(std::string &fileName, std::string &fileIndxName);
+    bool saveIndex(std::vector<Index> &index, const std::string &indxFile);
+    std::optional<std::vector<Student>> jsonToStruct(std::string &jsonFile);
 
     ~FileManager();
 };
