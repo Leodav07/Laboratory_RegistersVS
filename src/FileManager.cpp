@@ -224,7 +224,7 @@ std::optional<std::vector<Student>> FileManager::jsonToStruct(std::string &jsonF
         {
             for (auto &item : studentsJson)
             {
-                Student st;
+
                 if (item.contains("account") && item.at("account").is_string())
                 {
                     std::string account = item.at("account").get<std::string>();
@@ -295,12 +295,52 @@ std::optional<std::vector<Student>> FileManager::jsonToStruct(std::string &jsonF
                     return std::nullopt;
                 }
             }
+
+            for (auto &item : studentsJson)
+            {
+                Student st;
+                std::string account = item.at("account").get<std::string>();
+                std::memcpy(st.account, account.c_str(), account.size());
+                st.name = item.at("name").get<std::string>();
+
+                std::string phone = item.at("phone").get<std::string>();
+                std::memcpy(st.phoneNumber, phone.c_str(), phone.size());
+
+                st.age = item.at("age").get<uint32_t>(); // maybe can get error, so be careful
+
+                std::string entryDate = item.at("entryDate").get<std::string>();
+                std::memcpy(st.entryDate, entryDate.c_str(), entryDate.size());
+            }
         }
     }
     catch (nl::json::parse_error &p)
     {
         std::cerr << "Error: Parse error in byte: " << p.byte << '\n'
                   << "Description: " << p.what() << std::endl;
+        return std::nullopt;
+    }
+    catch (nl::json::type_error &t)
+    {
+        std::cerr << "Error: Invalid type error" << '\n'
+                  << "Description: " << t.what() << std::endl;
+        return std::nullopt;
+    }
+    catch (nl::json::other_error &o)
+    {
+        std::cerr << "Error" << '\n'
+                  << "Description: " << o.what() << std::endl;
+        return std::nullopt;
+    }
+    catch (nl::json::exception &je)
+    {
+        std::cerr << "Error: Json exception" << '\n'
+                  << "Description: " << je.what() << std::endl;
+        return std::nullopt;
+    }
+    catch (std::exception &e)
+    {
+        std::cerr << "Error: Exception" << '\n'
+                  << "Description: " << e.what() << std::endl;
         return std::nullopt;
     }
 }
