@@ -13,6 +13,7 @@ private:
     std::optional<std::vector<Index>> loadIndex(const std::string &indxFile);
     std::optional<std::string> getIndxName(std::string fileName);
     std::vector<Index> realIndex;
+    bool isValidDateFormat(std::string &date);
 
 public:
     FileManager();

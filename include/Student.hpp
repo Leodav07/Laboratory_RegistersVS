@@ -9,5 +9,5 @@ struct Student
     char phoneNumber[12];
     uint32_t age;
     char entryDate[8];
-    bool isActive;
+    bool isActive = true;
 };

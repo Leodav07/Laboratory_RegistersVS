@@ -254,6 +254,46 @@ std::optional<std::vector<Student>> FileManager::jsonToStruct(std::string &jsonF
                     std::cerr << "Error: The student with account number: (" << account << ") does not contain 'name' field or 'name' field is not a string type." << std::endl;
                     return std::nullopt;
                 }
+
+                if (item.contains("phone") && item.at("phone").is_string())
+                {
+                    std::string phone = item.at("phone").get<std::string>();
+                    if (phone.size() != 12)
+                    {
+                        std::cerr << "Error: The student account number (" << account << ") doesn't have twelve (12) characters exactly in 'phone' field." << std::endl;
+                        return std::nullopt;
+                    }
+                }
+                else
+                {
+                    return std::nullopt;
+                }
+
+                if (!item.contains("age") || !item.at("age").is_number_integer())
+                {
+                    std::cerr << "Error: The student with account number: (" << account << ") does not contain 'age' field or 'age' field is not an number_int type." << std::endl;
+                    return std::nullopt;
+                }
+
+                if (item.contains("entryDate") && item.at("entryDate").is_string())
+                {
+                    std::string entryDate = item.at("entryDate").get<std::string>();
+                    if (entryDate.size() != 8)
+                    {
+                        std::cerr << "Error: The student account number (" << account << ") doesn't have eight (8) characters exactly in 'entryDate' field." << std::endl;
+                        return std::nullopt;
+                    }
+
+                    if (!isValidDateFormat(entryDate))
+                    {
+                        std::cerr << "Error: The student account number (" << account << ") has a format error in 'entryDate' field AAAAMMDD, please check." << std::endl;
+                        return std::nullopt;
+                    }
+                }
+                else
+                {
+                    return std::nullopt;
+                }
             }
         }
     }
@@ -263,4 +303,25 @@ std::optional<std::vector<Student>> FileManager::jsonToStruct(std::string &jsonF
                   << "Description: " << p.what() << std::endl;
         return std::nullopt;
     }
+}
+
+bool FileManager::isValidDateFormat(std::string &date)
+{
+    for (auto &c : date)
+    {
+        if (std::isdigit(c))
+            return false;
+    }
+
+    int year = std::stoi(date.substr(0, 4));
+    if (year < 1910)
+        return false;
+    int month = std::stoi(date.substr(4, 2));
+    if (month > 12 || month < 1)
+        return false;
+    int day = std::stoi(date.substr(6, 2));
+    if ((day > 31 || day < 1))
+        return false;
+
+    return true;
 }
