@@ -178,7 +178,7 @@ std::optional<std::string> FileManager::getIndxName(std::string fileName)
     return fileName.substr(0, dotPos);
 }
 
-std::optional<std::vector<Student>> FileManager::jsonToStruct(const std::string &jsonFile)
+std::optional<std::vector<Student>> FileManager::jsonToStruct(const std::string &jsonFile, bool isUpdate)
 {
     try
     {
@@ -196,7 +196,7 @@ std::optional<std::vector<Student>> FileManager::jsonToStruct(const std::string 
         {
             for (auto &item : studentsJson)
             {
-                if (!verifyJSON(item))
+                if (!verifyJSON(item, isUpdate))
                     return std::nullopt;
             }
 
@@ -222,7 +222,7 @@ std::optional<std::vector<Student>> FileManager::jsonToStruct(const std::string 
         }
         else
         {
-            if (!verifyJSON(studentsJson))
+            if (!verifyJSON(studentsJson, isUpdate))
             {
                 return std::nullopt;
             }
@@ -279,7 +279,7 @@ std::optional<std::vector<Student>> FileManager::jsonToStruct(const std::string 
         return std::nullopt;
     }
 }
-bool FileManager::verifyJSON(nl::json &item)
+bool FileManager::verifyJSON(nl::json &item, bool isUpdate)
 {
 
     if (item.contains("account") && item.at("account").is_string())
@@ -291,9 +291,14 @@ bool FileManager::verifyJSON(nl::json &item)
             return false;
         }
         auto idx = binarySearch(account);
-        if (idx.has_value())
+        if (!isUpdate && idx.has_value())
         {
             std::cerr << "Error: The account: " << account << " already exists. There can't exists duplicates." << std::endl;
+            return false;
+        }
+        else if (isUpdate && !idx.has_value())
+        {
+            std::cerr << "Error: The account: " << account << " doesn't exist." << std::endl;
             return false;
         }
     }
@@ -476,9 +481,9 @@ std::optional<Student> FileManager::searchByCode(const std::string &dataFile, co
 
     auto idxSt = binarySearch(codeAccount);
 
-    if (!idxSt.has_value())
+    if (!idxSt.has_value() || !idxSt.value().isActive)
     {
-        std::cerr << "Student with " << codeAccount << " code doesn't exist." << std::endl;
+        std::cerr << "Student with " << codeAccount << " code doesn't exist or is inactive." << std::endl;
         return std::nullopt;
     }
 
@@ -549,4 +554,77 @@ bool FileManager::removeStudentByCode(const std::string &dataFile, const std::st
     }
 
     return saveIndex(realIndex, indexFile);
+}
+
+bool FileManager::updateStudent(const std::string &dataFile, const std::string &jsonFile, const std::string &indexFile)
+{
+    if (!loadIndex(indexFile))
+    {
+        std::ifstream check(indexFile);
+        if (check.good())
+        {
+            std::cerr << "Error: error loading index." << std::endl;
+            return false;
+        }
+    }
+
+    auto students = jsonToStruct(jsonFile, true);
+    std::fstream dFile(dataFile, std::ios::binary | std::ios::in | std::ios::out);
+
+    if (!dFile.is_open())
+    {
+        std::cerr << "The file (" << dataFile << ") cannot open." << std::endl;
+        return false;
+    }
+
+    if (!students.has_value())
+    {
+        std::cerr << "Error" << std::endl;
+        return false;
+    }
+
+    for (auto &st : students.value())
+    {
+        std::string codeAccount(st.account, sizeof(st.account));
+        auto index = binarySearch(codeAccount);
+
+        if (!index.has_value())
+        {
+            std::cerr << "Error searching index..." << std::endl;
+            return false;
+        }
+
+        if (!markInactive(dFile, index.value().offset))
+        {
+            std::cerr << "Error ocurred with student account: " << codeAccount << std::endl;
+            return false;
+        }
+        std::vector<char> newRecord = serializeStudent(st);
+        dFile.seekp(0, std::ios::end);
+        long long nOffSet = dFile.tellp();
+        if (!dFile.write(newRecord.data(), newRecord.size()))
+        {
+            std::cerr << "Error while writing update record of: " << codeAccount << std::endl;
+            return false;
+        }
+
+        for (auto &idx : realIndex)
+        {
+            std::string idxAccount(idx.account, sizeof(idx.account));
+            if (idxAccount == codeAccount)
+            {
+                idx.offset = nOffSet;
+                idx.size = newRecord.size();
+            }
+        }
+    }
+
+    return saveIndex(realIndex, indexFile);
+}
+
+bool FileManager::markInactive(std::fstream &file, long long offset)
+{
+    file.seekp(offset + sizeof(uint32_t), std::ios::beg);
+    bool inactive = false;
+    return file.write(reinterpret_cast<const char *>(&inactive), sizeof(inactive)).good();
 }

@@ -30,7 +30,14 @@ int main(int argc, const char *argv[])
             break;
 
         case CliCommand::RemoveRecord:
-            std::cout << "Eliminar registro activado." << std::endl;
+            if (fM.removeStudentByCode(cli.getDataFile(), cli.getAccount(), cli.getIndexFile()))
+            {
+                std::cout << "Student with account: (" << cli.getAccount() << ") has been eliminated successfully." << std::endl;
+            }
+            else
+            {
+                std::cerr << "Something went wrong." << std::endl;
+            }
 
             break;
 
@@ -39,7 +46,7 @@ int main(int argc, const char *argv[])
             auto st = fM.searchByCode(cli.getDataFile(), cli.getAccount(), cli.getIndexFile());
             if (!st.has_value())
             {
-                std::cerr << "An error ocurred while reading data file.";
+                std::cerr << "Error.";
             }
             else
             {
@@ -56,7 +63,14 @@ int main(int argc, const char *argv[])
             break;
         }
         case CliCommand::UpdateRecord:
-            std::cout << "Actualizar registro activado." << std::endl;
+            if (fM.updateStudent(cli.getDataFile(), cli.getFile(), cli.getIndexFile()))
+            {
+                std::cout << "Student/s updated successfully" << std::endl;
+            }
+            else
+            {
+                std::cerr << "Something went wrong updating" << std::endl;
+            }
 
             break;
 
