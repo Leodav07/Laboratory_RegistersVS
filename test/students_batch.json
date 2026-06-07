@@ -1,0 +1,23 @@
+[
+    {
+        "account": "2019-00010",
+        "name": "Ana Lucia Morales",
+        "phone": "502-1111-222",
+        "age": 24,
+        "entryDate": "20190301"
+    },
+    {
+        "account": "2020-00055",
+        "name": "Carlos Eduardo Ramirez Fuentes",
+        "phone": "502-3333-444",
+        "age": 22,
+        "entryDate": "20200801"
+    },
+    {
+        "account": "2022-00007",
+        "name": "Sofia Martinez",
+        "phone": "502-5555-666",
+        "age": 19,
+        "entryDate": "20220115"
+    }
+]

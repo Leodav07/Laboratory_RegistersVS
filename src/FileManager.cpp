@@ -302,6 +302,11 @@ bool FileManager::verifyJSON(nl::json &item, bool isUpdate)
             std::cerr << "Error: The account: " << account << " doesn't exist." << std::endl;
             return false;
         }
+        else if (isUpdate && idx.has_value() && !idx.value().isActive)
+        {
+            std::cerr << "Error: The account: " << account << " is inactive (deleted)." << std::endl;
+            return false;
+        }
     }
     else
     {
