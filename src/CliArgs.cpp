@@ -119,11 +119,11 @@ void CliArgs::parse(int argc, const char *argv[])
 
     if (indexFile.empty())
     {
-        size_t dotPos = filePath.rfind('.');
+        size_t dotPos = dataFile.rfind('.');
         if (dotPos != std::string::npos)
-            indexFile = filePath.substr(0, dotPos) + ".idx";
+            indexFile = dataFile.substr(0, dotPos) + ".idx";
         else
-            indexFile = filePath + ".idx";
+            indexFile = dataFile + ".idx";
     }
 
     if (!cliCommand_.has_value())
