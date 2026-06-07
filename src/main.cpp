@@ -75,7 +75,14 @@ int main(int argc, const char *argv[])
             break;
 
         case CliCommand::CleanUp:
-            std::cout << "Clean-Up  activado." << std::endl;
+            if (fM.cleanUp(cli.getDataFile(), cli.getIndexFile()))
+            {
+                std::cout << "DataBase in: (" << cli.getDataFile() << ") cleaned correctly." << std::endl;
+            }
+            else
+            {
+                std::cerr << "DataBase in: (" << cli.getDataFile() << ") not cleaned." << std::endl;
+            }
 
             break;
 

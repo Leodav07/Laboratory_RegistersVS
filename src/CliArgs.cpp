@@ -98,7 +98,7 @@ void CliArgs::parse(int argc, const char *argv[])
             cliCommand_ = CliCommand::UpdateRecord;
             filePath = argv[++i];
         }
-        else if (arg == "clean-up")
+        else if (arg == "--clean-up")
         {
             cliCommand_ = CliCommand::CleanUp;
         }

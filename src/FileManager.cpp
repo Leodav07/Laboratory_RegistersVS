@@ -705,7 +705,7 @@ bool FileManager::cleanUp(const std::string &dataFile, const std::string &indexF
                 ++it;
             }
         }
-
+        InsertSort(realIndex);
         if (!saveIndex(realIndex, indexFile))
         {
             std::cerr << "Error saving new index." << std::endl;
