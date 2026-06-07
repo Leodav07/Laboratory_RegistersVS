@@ -8,6 +8,7 @@
 *.so
 *.bin
 *.dat
+*.idx
 build/
 bin/
 out/
