@@ -118,6 +118,7 @@ void FileManager::InsertSort(std::vector<Index> &index)
 
 bool FileManager::loadIndex(const std::string &indxFile)
 {
+    realIndex.clear();
     std::ofstream createIfNotExists(indxFile, std::ios::app);
     createIfNotExists.close();
 
@@ -493,4 +494,59 @@ std::optional<Student> FileManager::searchByCode(const std::string &dataFile, co
     dFile.read(buf.data(), buf.size());
 
     return deserializeStudent(buf);
+}
+
+bool FileManager::removeStudentByCode(const std::string &dataFile, const std::string &codeAccount, const std::string &indexFile)
+{
+    std::fstream dFile(dataFile, std::ios::binary | std::ios::in | std::ios::out);
+
+    if (!dFile.is_open())
+    {
+        std::cerr << "The file (" << dataFile << ") cannot open." << std::endl;
+        return false;
+    }
+
+    if (!loadIndex(indexFile))
+    {
+        std::ifstream check(indexFile);
+        if (check.good())
+        {
+            std::cerr << "Error: error loading index." << std::endl;
+            return false;
+        }
+    }
+
+    auto st = binarySearch(codeAccount);
+
+    if (st.has_value() && !st.value().isActive)
+    {
+        std::cerr << "This student record has been eliminated before." << std::endl;
+        return false;
+    }
+    else if (!st.has_value())
+    {
+        std::cerr << "Student with " << codeAccount << " code doesn't exist." << std::endl;
+        return false;
+    }
+
+    long long offset = st.value().offset;
+
+    bool inactive = false;
+    dFile.seekp(offset + sizeof(uint32_t), std::ios::beg);
+    if (!dFile.write(reinterpret_cast<const char *>(&inactive), sizeof(bool)))
+    {
+        std::cerr << "Error while overwriting record status." << std::endl;
+        return false;
+    }
+
+    for (auto &idx : realIndex)
+    {
+        std::string idxAccount(idx.account, sizeof(idx.account));
+        if (idxAccount == codeAccount)
+        {
+            idx.isActive = false;
+        }
+    }
+
+    return saveIndex(realIndex, indexFile);
 }

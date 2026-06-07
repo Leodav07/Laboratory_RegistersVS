@@ -31,5 +31,6 @@ public:
     std::optional<std::vector<Student>> jsonToStruct(const std::string &jsonFile);
     bool addRecords(const std::string &jsonFile, const std::string &dataFile, const std::string &indexFile);
     std::optional<Student> searchByCode(const std::string &dataFile, const std::string &codeAccount, const std::string &indexFile);
+    bool removeStudentByCode(const std::string &dataFile, const std::string &codeAccount, const std::string &indexFile);
     ~FileManager() {};
 };
