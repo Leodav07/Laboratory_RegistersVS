@@ -6,6 +6,7 @@
 #include "Student.hpp"
 #include "Index.hpp"
 #include <optional>
+#include "json.hpp"
 namespace nl = nlohmann;
 
 class FileManager
@@ -19,7 +20,7 @@ private:
     std::optional<Index> binarySearch(std::string &accountSt);
 
 public:
-    FileManager();
+    FileManager() {};
     std::vector<char> serializeStudent(const Student &st);
     Student deserializeStudent(const std::vector<char> &buf);
     void InsertSort(std::vector<Index> &index, Index inx);
@@ -27,8 +28,8 @@ public:
     bool IndexManager(std::string &fileName, std::vector<Index> &idx); // If the user doesn't specify index file.
     bool IndexManager(std::string &fileName, std::string &fileIndxName);
     bool saveIndex(std::vector<Index> &index, const std::string &indxFile);
-    std::optional<std::vector<Student>> jsonToStruct(std::string &jsonFile);
-    bool addRecords(std::string &jsonFile, std::string &dataFile, std::string &indexFile);
+    std::optional<std::vector<Student>> jsonToStruct(const std::string &jsonFile);
+    bool addRecords(const std::string &jsonFile, const std::string &dataFile, const std::string &indexFile);
 
-    ~FileManager();
+    ~FileManager() {};
 };

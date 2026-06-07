@@ -11,12 +11,21 @@ int main(int argc, const char *argv[])
         return 1;
     }
 
+    FileManager fM;
+
     if (cli.getCliCommand().has_value())
     {
         switch (cli.getCliCommand().value())
         {
         case CliCommand::AddRecord:
-            std::cout << "Agregar registro activado." << std::endl;
+            if (fM.addRecords(cli.getFile(), cli.getDataFile(), cli.getIndexFile()))
+            {
+                std::cout << "Student/s added successfully!" << std::endl;
+            }
+            else
+            {
+                std::cerr << "Error ocurred" << std::endl;
+            }
             break;
 
         case CliCommand::RemoveRecord:

@@ -76,11 +76,11 @@ void CliArgs::parse(int argc, const char *argv[])
             cliCommand_ = CliCommand::RemoveRecord;
             accNumber = argv[++i];
         }
-        else if (arg == "--search")
+        else if (arg == "buscar")
         {
             if (i + 1 >= argc)
             {
-                std::cerr << "Error: '--search' requires an account number." << std::endl;
+                std::cerr << "Error: 'buscar' requires an account number." << std::endl;
                 good = false;
                 return;
             }
@@ -115,6 +115,15 @@ void CliArgs::parse(int argc, const char *argv[])
         std::cerr << "Error: '--data' flag is required." << std::endl;
         good = false;
         return;
+    }
+
+    if (indexFile.empty())
+    {
+        size_t dotPos = filePath.rfind('.');
+        if (dotPos != std::string::npos)
+            indexFile = filePath.substr(0, dotPos) + ".idx";
+        else
+            indexFile = filePath + ".idx";
     }
 
     if (!cliCommand_.has_value())

@@ -118,6 +118,9 @@ void FileManager::InsertSort(std::vector<Index> &index)
 
 bool FileManager::loadIndex(const std::string &indxFile)
 {
+    std::ofstream createIfNotExists(indxFile, std::ios::app);
+    createIfNotExists.close();
+
     std::ifstream file(indxFile, std::ios::binary);
     if (!file.is_open())
     {
@@ -174,7 +177,7 @@ std::optional<std::string> FileManager::getIndxName(std::string fileName)
     return fileName.substr(0, dotPos);
 }
 
-std::optional<std::vector<Student>> FileManager::jsonToStruct(std::string &jsonFile)
+std::optional<std::vector<Student>> FileManager::jsonToStruct(const std::string &jsonFile)
 {
     try
     {
@@ -370,7 +373,7 @@ bool FileManager::isValidDateFormat(std::string &date)
     return true;
 }
 
-bool FileManager::addRecords(std::string &jsonFile, std::string &dataFile, std::string &indexFile)
+bool FileManager::addRecords(const std::string &jsonFile, const std::string &dataFile, const std::string &indexFile)
 {
     std::ofstream dFile(dataFile, std::ios::binary | std::ios::app);
 
@@ -427,18 +430,18 @@ bool FileManager::addRecords(std::string &jsonFile, std::string &dataFile, std::
 std::optional<Index> FileManager::binarySearch(std::string &accountSt)
 {
     int low = 0;
-    int high = realIndex.size();
+    int high = realIndex.size() - 1;
 
     while (low <= high)
     {
         int mid = (low + high) / 2;
-
-        if (realIndex[mid].account == accountSt)
+        std::string midAccount(realIndex[mid].account, sizeof(Index::account));
+        if (midAccount == accountSt)
         {
             return realIndex[mid];
         }
 
-        if (realIndex[mid].account < accountSt)
+        if (midAccount < accountSt)
         {
             low = mid + 1;
         }
