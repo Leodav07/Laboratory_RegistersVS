@@ -2,6 +2,7 @@
 #include <cstring>
 #include <iostream>
 #include <json.hpp>
+#include <filesystem>
 
 namespace nl = nlohmann;
 
@@ -627,4 +628,95 @@ bool FileManager::markInactive(std::fstream &file, long long offset)
     file.seekp(offset + sizeof(uint32_t), std::ios::beg);
     bool inactive = false;
     return file.write(reinterpret_cast<const char *>(&inactive), sizeof(inactive)).good();
+}
+
+bool FileManager::cleanUp(const std::string &dataFile, const std::string &indexFile)
+{
+    if (!loadIndex(indexFile))
+    {
+        std::ifstream check(indexFile);
+        if (check.good())
+        {
+            std::cerr << "Error: error loading index." << std::endl;
+            return false;
+        }
+    }
+
+    bool allActive = true;
+
+    for (auto &idx : realIndex)
+    {
+        if (!idx.isActive)
+            allActive = false;
+    }
+
+    if (!allActive)
+    {
+        std::fstream dFile(dataFile, std::ios::binary | std::ios::in);
+        if (!dFile.is_open())
+        {
+            std::cerr << "Error the file (" << dataFile << ") cannot open." << std::endl;
+            return false;
+        }
+
+        size_t dotPos = dataFile.rfind('.');
+        if (dotPos == std::string::npos)
+        {
+            std::cerr << "Invalid name of file." << std::endl;
+            return false;
+        }
+        std::string tempName = dataFile.substr(0, dotPos) + "_temp" + dataFile.substr(dotPos);
+        std::fstream tempFile(tempName, std::ios::binary | std::ios::out);
+
+        for (auto &idx : realIndex)
+        {
+            if (idx.isActive)
+            {
+                long long offset = idx.offset;
+                uint32_t tSize;
+                dFile.seekg(offset, std::ios::beg);
+                dFile.read(reinterpret_cast<char *>(&tSize), sizeof(tSize));
+
+                std::vector<char> buf(tSize + sizeof(uint32_t));
+
+                dFile.seekg(offset, std::ios::beg);
+                dFile.read(buf.data(), buf.size());
+
+                long long newOffSet = tempFile.tellp();
+                tempFile.write(buf.data(), buf.size());
+                idx.offset = newOffSet;
+            }
+        }
+
+        dFile.close();
+        tempFile.close();
+        std::filesystem::remove(dataFile);
+        std::filesystem::rename(tempName, dataFile);
+
+        auto it = realIndex.begin();
+        while (it != realIndex.end())
+        {
+            if (!it->isActive)
+            {
+                it = realIndex.erase(it);
+            }
+            else
+            {
+                ++it;
+            }
+        }
+
+        if (!saveIndex(realIndex, indexFile))
+        {
+            std::cerr << "Error saving new index." << std::endl;
+            return false;
+        }
+
+        return true;
+    }
+    else
+    {
+        std::cout << "There aren't records to clean, everything is active." << std::endl;
+        return false;
+    }
 }

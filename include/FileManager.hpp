@@ -32,5 +32,6 @@ public:
     std::optional<Student> searchByCode(const std::string &dataFile, const std::string &codeAccount, const std::string &indexFile);
     bool removeStudentByCode(const std::string &dataFile, const std::string &codeAccount, const std::string &indexFile);
     bool updateStudent(const std::string &dataFile, const std::string &jsonFile, const std::string &indexFile);
+    bool cleanUp(const std::string &dataFile, const std::string &indexFile);
     ~FileManager() {};
 };
