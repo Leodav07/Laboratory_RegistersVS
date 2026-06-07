@@ -16,6 +16,7 @@ private:
     std::vector<Index> realIndex;
     bool isValidDateFormat(std::string &date);
     bool verifyJSON(nl::json &item);
+    std::optional<Index> binarySearch(std::string &accountSt);
 
 public:
     FileManager();

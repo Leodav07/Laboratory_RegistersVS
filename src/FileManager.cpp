@@ -17,7 +17,7 @@ std::vector<char> FileManager::serializeStudent(const Student &st)
     p += sizeof(uint32_t);
 
     *reinterpret_cast<bool *>(p) = st.isActive;
-    p += sizeof(sizeof(bool));
+    p += sizeof(bool);
 
     std::memcpy(p, st.account, sizeof(st.account));
     p += sizeof(st.account);
@@ -178,7 +178,13 @@ std::optional<std::vector<Student>> FileManager::jsonToStruct(std::string &jsonF
 {
     try
     {
-        nl::json studentsJson = nl::json::parse(jsonFile);
+        std::ifstream file(jsonFile);
+        if (!file.is_open())
+        {
+            std::cerr << "Error: cannot open JSON file." << std::endl;
+            return std::nullopt;
+        }
+        nl::json studentsJson = nl::json::parse(file);
 
         std::vector<Student> students;
 
@@ -280,13 +286,11 @@ bool FileManager::verifyJSON(nl::json &item)
             std::cerr << "Error: The account number (" << account << ") doesn't have ten (10) characters exactly." << std::endl;
             return false;
         }
-        for (int i = 0; i < realIndex.size(); i++)
+        auto idx = binarySearch(account);
+        if (idx.has_value())
         {
-            if (account == std::string(realIndex[i].account, 10))
-            {
-                std::cerr << "Error: The account: " << account << " already exists. There can't exists duplicates." << std::endl;
-                return false;
-            }
+            std::cerr << "Error: The account: " << account << " already exists. There can't exists duplicates." << std::endl;
+            return false;
         }
     }
     else
@@ -418,4 +422,30 @@ bool FileManager::addRecords(std::string &jsonFile, std::string &dataFile, std::
         return false;
     }
     return true;
+}
+
+std::optional<Index> FileManager::binarySearch(std::string &accountSt)
+{
+    int low = 0;
+    int high = realIndex.size();
+
+    while (low <= high)
+    {
+        int mid = (low + high) / 2;
+
+        if (realIndex[mid].account == accountSt)
+        {
+            return realIndex[mid];
+        }
+
+        if (realIndex[mid].account < accountSt)
+        {
+            low = mid + 1;
+        }
+        else
+        {
+            high = mid - 1;
+        }
+    }
+    return std::nullopt;
 }

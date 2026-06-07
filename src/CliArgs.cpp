@@ -3,77 +3,125 @@
 
 void CliArgs::printUsage()
 {
-    std::cout << "Uso: " << program << " Interfaz de Linea de Comandos." << '\n'
-              << "Agregar registro/s: --agregar | \"archivo.json\" -> (Obligatorio, sin comillas)." << '\n'
-              << "Eliminar registro por No. de Cuenta: --eliminar | \"No. de Cuenta\" -> (Obligatorio, sin comillas)." << '\n'
-              << "Buscar registro por No. de Cuenta: --buscar | \"No. de Cuenta\" -> (Obligatorio, sin comillas)." << '\n'
-              << "Actualizar registro: --actualizar | \"archivo.json\" -> (Obligatorio, sin comillas)." << '\n'
-              << "Clean-Up: --clean-up" << std::endl;
+    std::cout << "Usage: " << program << " --data <file.data> [--index <file.idx>] <command> [argument]\n"
+              << "\nCommands:\n"
+              << "  --add   <file.json>    Add one or more student records from a JSON file.\n"
+              << "  --search    <account>      Search a student record by account number.\n"
+              << "  --remove  <account>      Soft-delete a student record by account number.\n"
+              << "  --update <file.json>   Update an existing student record from a JSON file.\n"
+              << "  --clean-up                 Rebuild the data file removing all soft-deleted records.\n"
+              << "\nExamples:\n"
+              << "  " << program << " --data student.data --add students.json\n"
+              << "  " << program << " --data student.data --index student.idx --search 2020-00001\n"
+              << "  " << program << " --data student.data --remove 2020-00001\n"
+              << "  " << program << " --data student.data --clean-up\n"
+              << std::endl;
 }
 
 void CliArgs::parse(int argc, const char *argv[])
 {
     program = argv[0];
 
-    if (argc > 2 && argc <= 3)
+    if (argc < 2)
     {
-        std::string command = argv[1];
+        std::cerr << "Error: no arguments provided." << std::endl;
+        printUsage();
+        good = false;
+        return;
+    }
 
-        if (command == "--agregar")
+    for (int i = 1; i < argc; i++)
+    {
+        std::string arg = argv[i];
+
+        if (arg == "--data")
         {
-            filePath = argv[2];
+            if (i + 1 >= argc)
+            {
+                std::cerr << "Error: '--data' requires a file path." << std::endl;
+                good = false;
+                return;
+            }
+            dataFile = argv[++i];
+        }
+        else if (arg == "--index")
+        {
+            if (i + 1 >= argc)
+            {
+                std::cerr << "Error: '--index' requires a file path." << std::endl;
+                good = false;
+                return;
+            }
+            indexFile = argv[++i];
+        }
+        else if (arg == "--add")
+        {
+            if (i + 1 >= argc)
+            {
+                std::cerr << "Error: '--add' requires a JSON file." << std::endl;
+                good = false;
+                return;
+            }
             cliCommand_ = CliCommand::AddRecord;
+            filePath = argv[++i];
         }
-        else if (command == "--eliminar")
+        else if (arg == "--remove")
         {
-            accNumber = argv[2];
+            if (i + 1 >= argc)
+            {
+                std::cerr << "Error: '--remove' requires an account number." << std::endl;
+                good = false;
+                return;
+            }
             cliCommand_ = CliCommand::RemoveRecord;
+            accNumber = argv[++i];
         }
-        else if (command == "--buscar")
+        else if (arg == "--search")
         {
-            accNumber = argv[2];
+            if (i + 1 >= argc)
+            {
+                std::cerr << "Error: '--search' requires an account number." << std::endl;
+                good = false;
+                return;
+            }
             cliCommand_ = CliCommand::SearchRecord;
+            accNumber = argv[++i];
         }
-        else if (command == "--actualizar")
+        else if (arg == "--update")
         {
-            filePath = argv[2];
+            if (i + 1 >= argc)
+            {
+                std::cerr << "Error: '--update' requires a JSON file." << std::endl;
+                good = false;
+                return;
+            }
             cliCommand_ = CliCommand::UpdateRecord;
+            filePath = argv[++i];
         }
-        else if (command == "--clean-up")
+        else if (arg == "clean-up")
         {
             cliCommand_ = CliCommand::CleanUp;
         }
         else
         {
-            std::cout << "Expected commands: " << '\n'
-                      << std::endl;
-            cliCommand_ = std::nullopt;
+            std::cerr << "Error: unrecognized argument '" << arg << "'." << std::endl;
             good = false;
+            return;
         }
     }
-    else if (argc == 2)
+
+    if (dataFile.empty())
     {
-        std::string command = argv[1];
-        if (command == "--clean-up")
-        {
-            cliCommand_ = CliCommand::CleanUp;
-        }
-        else
-        {
-            cliCommand_ = std::nullopt;
-            good = false;
-        }
-    }
-    else if (argc < 2)
-    {
-        std::cout << "Expected commands." << '\n'
-                  << std::endl;
-        cliCommand_ = std::nullopt;
+        std::cerr << "Error: '--data' flag is required." << std::endl;
         good = false;
+        return;
     }
-    else
+
+    if (!cliCommand_.has_value())
     {
-        cliCommand_ = std::nullopt;
+        std::cerr << "Error: no command provided." << std::endl;
+        printUsage();
         good = false;
+        return;
     }
 }

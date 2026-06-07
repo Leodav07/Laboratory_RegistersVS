@@ -14,6 +14,16 @@ public:
         return filePath;
     }
 
+    std::string getDataFile()
+    {
+        return dataFile;
+    }
+
+    std::string getIndexFile()
+    {
+        return indexFile;
+    }
+
     std::string getAccount()
     {
         return accNumber;
@@ -32,5 +42,7 @@ private:
     bool good = true;
     std::string program;
     std::string filePath;
+    std::string dataFile;
+    std::string indexFile;
     std::string accNumber;
 };
