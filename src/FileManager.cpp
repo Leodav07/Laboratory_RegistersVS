@@ -116,30 +116,29 @@ void FileManager::InsertSort(std::vector<Index> &index)
     }
 }
 
-std::optional<std::vector<Index>> FileManager::loadIndex(const std::string &indxFile)
+bool FileManager::loadIndex(const std::string &indxFile)
 {
     std::ifstream file(indxFile, std::ios::binary);
     if (!file.is_open())
     {
         std::cerr << "Error: The file ('" << indxFile << "') cannot open." << std::endl;
-        return std::nullopt;
+        return false;
     }
 
     Index inx;
-    std::vector<Index> index;
 
     while (file.read(reinterpret_cast<char *>(&inx), sizeof(inx)))
     {
-        index.push_back(inx);
+        realIndex.push_back(inx);
     }
 
     if (file.bad() || (file.fail() && !file.eof()))
     {
         std::cerr << "Format Error / Critical System Error." << std::endl;
-        return std::nullopt;
+        return false;
     }
 
-    return index;
+    return true;
 }
 
 bool FileManager::saveIndex(std::vector<Index> &index, const std::string &indxFile)
@@ -173,44 +172,6 @@ std::optional<std::string> FileManager::getIndxName(std::string fileName)
         return std::nullopt;
     }
     return fileName.substr(0, dotPos);
-}
-
-bool FileManager::IndexManager(std::string &fileName, std::vector<Index> &idx)
-{
-    auto indxNameFile = getIndxName(fileName);
-
-    if (!indxNameFile.has_value())
-    {
-        std::cerr << "Error: Name of file is not valid. Please check and try again. (Expected .json)" << std::endl;
-        return false;
-    }
-
-    auto index = loadIndex(indxNameFile.value());
-
-    if (!index.has_value())
-    {
-        return false;
-    }
-    for (const auto &i : idx)
-    {
-        index.value().push_back(i);
-    }
-    InsertSort(index.value());
-
-    return saveIndex(index.value(), indxNameFile.value());
-}
-
-bool FileManager::IndexManager(std::string &fileName, std::string &fileIndxName)
-{
-    auto index = loadIndex(fileIndxName);
-
-    if (!index.has_value())
-    {
-        std::cerr << "Error: Name of file is not valid. Please check and try again. (Expected .idx)" << std::endl;
-        return false;
-    }
-
-    InsertSort(index.value());
 }
 
 std::optional<std::vector<Student>> FileManager::jsonToStruct(std::string &jsonFile)
@@ -407,6 +368,24 @@ bool FileManager::isValidDateFormat(std::string &date)
 
 bool FileManager::addRecords(std::string &jsonFile, std::string &dataFile, std::string &indexFile)
 {
+    std::ofstream dFile(dataFile, std::ios::binary | std::ios::app);
+
+    if (!dFile.is_open())
+    {
+        std::cerr << "The file (" << dataFile << ") cannot open." << std::endl;
+        return false;
+    }
+
+    if (!loadIndex(indexFile))
+    {
+        std::ifstream check(indexFile);
+        if (check.good())
+        {
+            std::cerr << "Error: error loading index." << std::endl;
+            return false;
+        }
+    }
+
     auto students = jsonToStruct(jsonFile);
 
     if (!students.has_value())
@@ -415,5 +394,28 @@ bool FileManager::addRecords(std::string &jsonFile, std::string &dataFile, std::
         return false;
     }
 
-    
+    for (const auto &item : students.value())
+    {
+        Index idx;
+        std::vector<char> record;
+        long long offset = dFile.tellp();
+        record = serializeStudent(item);
+        dFile.write(record.data(), record.size());
+
+        std::memset(idx.account, 0, sizeof(idx.account));
+        std::memcpy(idx.account, item.account, sizeof(item.account));
+
+        idx.offset = offset;
+        idx.size = record.size();
+        idx.isActive = true;
+
+        InsertSort(realIndex, idx);
+    }
+
+    if (!saveIndex(realIndex, indexFile))
+    {
+        std::cerr << "Error: index saving proccess failed." << std::endl;
+        return false;
+    }
+    return true;
 }
