@@ -195,7 +195,7 @@ The application validates all input before performing any operation:
 
 - Account number must be exactly 10 characters
 - Phone number must be exactly 12 characters  
-- Entry date mus be exactly 8 characters
+- Entry date must be exactly 8 characters
 - Duplicate account numbers are rejected on insert
 - Non-existent or inactive accounts are rejected on update and search
 - All binary file I/O errors are reported with descriptive messages
