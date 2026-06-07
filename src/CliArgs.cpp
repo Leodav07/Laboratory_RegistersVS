@@ -76,11 +76,11 @@ void CliArgs::parse(int argc, const char *argv[])
             cliCommand_ = CliCommand::RemoveRecord;
             accNumber = argv[++i];
         }
-        else if (arg == "buscar")
+        else if (arg == "--search")
         {
             if (i + 1 >= argc)
             {
-                std::cerr << "Error: 'buscar' requires an account number." << std::endl;
+                std::cerr << "Error: '--search' requires an account number." << std::endl;
                 good = false;
                 return;
             }

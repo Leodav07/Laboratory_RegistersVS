@@ -427,7 +427,7 @@ bool FileManager::addRecords(const std::string &jsonFile, const std::string &dat
     return true;
 }
 
-std::optional<Index> FileManager::binarySearch(std::string &accountSt)
+std::optional<Index> FileManager::binarySearch(const std::string &accountSt)
 {
     int low = 0;
     int high = realIndex.size() - 1;
@@ -451,4 +451,46 @@ std::optional<Index> FileManager::binarySearch(std::string &accountSt)
         }
     }
     return std::nullopt;
+}
+
+std::optional<Student> FileManager::searchByCode(const std::string &dataFile, const std::string &codeAccount, const std::string &indexFile)
+{
+    std::ifstream dFile(dataFile, std::ios::binary);
+
+    if (!dFile.is_open())
+    {
+        std::cerr << "The file (" << dataFile << ") cannot open." << std::endl;
+        return std::nullopt;
+    }
+
+    if (!loadIndex(indexFile))
+    {
+        std::ifstream check(indexFile);
+        if (check.good())
+        {
+            std::cerr << "Error: error loading index." << std::endl;
+            return std::nullopt;
+        }
+    }
+
+    auto idxSt = binarySearch(codeAccount);
+
+    if (!idxSt.has_value())
+    {
+        std::cerr << "Student with " << codeAccount << " code doesn't exist." << std::endl;
+        return std::nullopt;
+    }
+
+    long long offset = idxSt.value().offset;
+    Student st;
+    uint32_t tSize;
+    dFile.seekg(offset, std::ios::beg);
+    dFile.read(reinterpret_cast<char *>(&tSize), sizeof(tSize));
+
+    std::vector<char> buf(tSize + sizeof(uint32_t));
+
+    dFile.seekg(offset, std::ios::beg);
+    dFile.read(buf.data(), buf.size());
+
+    return deserializeStudent(buf);
 }

@@ -1,6 +1,7 @@
 #include <iostream>
 #include "FileManager.hpp"
 #include "CliArgs.hpp"
+#include <format>
 
 int main(int argc, const char *argv[])
 {
@@ -34,10 +35,26 @@ int main(int argc, const char *argv[])
             break;
 
         case CliCommand::SearchRecord:
-            std::cout << "Buscar registro activado." << std::endl;
+        {
+            auto st = fM.searchByCode(cli.getDataFile(), cli.getAccount(), cli.getIndexFile());
+            if (!st.has_value())
+            {
+                std::cerr << "An error ocurred while reading data file.";
+            }
+            else
+            {
+                std::string header = std::format("{:<10} {:^12} {:^14} {:^5} {:<10}", "Account", "Student Name", "Phone Number", "Age", "Entry Date");
+                std::cout << header << std::endl;
 
+                std::string line = std::format("{:<10} {:^12} {:^14} {:^5} {:<10}", std::string(st.value().account, sizeof(Student::account)),
+                                               st.value().name,
+                                               std::string(st.value().phoneNumber, sizeof(Student::phoneNumber)),
+                                               st.value().age,
+                                               std::string(st.value().entryDate, sizeof(Student::entryDate)));
+                std::cout << line << std::endl;
+            }
             break;
-
+        }
         case CliCommand::UpdateRecord:
             std::cout << "Actualizar registro activado." << std::endl;
 

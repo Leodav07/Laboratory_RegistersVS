@@ -17,7 +17,7 @@ private:
     std::vector<Index> realIndex;
     bool isValidDateFormat(std::string &date);
     bool verifyJSON(nl::json &item);
-    std::optional<Index> binarySearch(std::string &accountSt);
+    std::optional<Index> binarySearch(const std::string &accountSt);
 
 public:
     FileManager() {};
@@ -30,6 +30,6 @@ public:
     bool saveIndex(std::vector<Index> &index, const std::string &indxFile);
     std::optional<std::vector<Student>> jsonToStruct(const std::string &jsonFile);
     bool addRecords(const std::string &jsonFile, const std::string &dataFile, const std::string &indexFile);
-
+    std::optional<Student> searchByCode(const std::string &dataFile, const std::string &codeAccount, const std::string &indexFile);
     ~FileManager() {};
 };

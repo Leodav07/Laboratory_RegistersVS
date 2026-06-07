@@ -1,14 +1,14 @@
 [
     {
         "account": "2020-00001",
-        "name": "Juan Carlos Pérez López",
+        "name": "Juan Carlos Perez Lopez",
         "phone": "502-1234-567",
         "age": 22,
         "entryDate": "20200115"
     },
     {
         "account": "2020-00045",
-        "name": "María Fernanda García",
+        "name": "Maria Fernanda Garcia",
         "phone": "502-9876-543",
         "age": 21,
         "entryDate": "20200210"
