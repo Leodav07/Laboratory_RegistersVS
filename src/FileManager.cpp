@@ -16,6 +16,9 @@ std::vector<char> FileManager::serializeStudent(const Student &st)
     *reinterpret_cast<uint32_t *>(p) = totalSize;
     p += sizeof(uint32_t);
 
+    *reinterpret_cast<bool *>(p) = st.isActive;
+    p += sizeof(sizeof(bool));
+
     std::memcpy(p, st.account, sizeof(st.account));
     p += sizeof(st.account);
 
@@ -29,9 +32,6 @@ std::vector<char> FileManager::serializeStudent(const Student &st)
     p += sizeof(uint32_t);
 
     std::memcpy(p, st.entryDate, sizeof(st.entryDate));
-    p += sizeof(st.entryDate);
-
-    *reinterpret_cast<bool *>(p) = st.isActive;
 
     return record;
 }
@@ -58,7 +58,10 @@ Student FileManager::deserializeStudent(const std::vector<char> &buf)
         {
             throw std::runtime_error("Buffer is incomplete according to TotalSize.");
         }
+
         Student st;
+        st.isActive = *reinterpret_cast<const bool *>(p);
+        p += sizeof(bool);
         std::memcpy(st.account, p, sizeof(st.account));
         p += sizeof(st.account);
 
@@ -77,8 +80,6 @@ Student FileManager::deserializeStudent(const std::vector<char> &buf)
         std::memcpy(st.entryDate, p, sizeof(st.entryDate));
         p += sizeof(st.entryDate);
 
-        st.isActive = *reinterpret_cast<const bool *>(p);
-
         return st;
     }
     catch (std::runtime_error &e)
@@ -93,7 +94,7 @@ void FileManager::InsertSort(std::vector<Index> &index, Index inx)
     index.push_back(inx);
     size_t i = index.size() - 1;
 
-    while (i > 0 && memcmp(index[i - 1].account, index[i].account, sizeof(inx)) > 0)
+    while (i > 0 && memcmp(index[i - 1].account, index[i].account, sizeof(Index::account)) > 0)
     {
         Index temp = index[i];
         index[i] = index[i - 1];
@@ -106,7 +107,7 @@ void FileManager::InsertSort(std::vector<Index> &index)
 {
     size_t i = index.size() - 1;
 
-    while (i > 0 && memcmp(index[i - 1].account, index[i].account, sizeof(Index)) > 0)
+    while (i > 0 && memcmp(index[i - 1].account, index[i].account, sizeof(Index::account)) > 0)
     {
         Index temp = index[i];
         index[i] = index[i - 1];
@@ -166,7 +167,7 @@ bool FileManager::saveIndex(std::vector<Index> &index, const std::string &indxFi
 
 std::optional<std::string> FileManager::getIndxName(std::string fileName)
 {
-    size_t dotPos = fileName.find_first_of('.');
+    size_t dotPos = fileName.rfind('.');
     if (dotPos == std::string::npos)
     {
         return std::nullopt;
@@ -224,94 +225,57 @@ std::optional<std::vector<Student>> FileManager::jsonToStruct(std::string &jsonF
         {
             for (auto &item : studentsJson)
             {
-
-                if (item.contains("account") && item.at("account").is_string())
-                {
-                    std::string account = item.at("account").get<std::string>();
-                    if (account.size() != 10)
-                    {
-                        std::cerr << "Error: The account number (" << account << ") doesn't have ten (10) characters exactly." << std::endl;
-                        return std::nullopt;
-                    }
-                    for (int i = 0; i < realIndex.size(); i++)
-                    {
-                        if (account == std::string(realIndex[i].account, 10))
-                        {
-                            std::cerr << "Error: The account: " << account << " already exists. There can't exists duplicates." << std::endl;
-                            return std::nullopt;
-                        }
-                    }
-                }
-                else
-                {
+                if (!verifyJSON(item))
                     return std::nullopt;
-                }
-
-                std::string account = item.at("account").get<std::string>();
-
-                if (!item.contains("name") || !item.at("name").is_string())
-                {
-                    std::cerr << "Error: The student with account number: (" << account << ") does not contain 'name' field or 'name' field is not a string type." << std::endl;
-                    return std::nullopt;
-                }
-
-                if (item.contains("phone") && item.at("phone").is_string())
-                {
-                    std::string phone = item.at("phone").get<std::string>();
-                    if (phone.size() != 12)
-                    {
-                        std::cerr << "Error: The student account number (" << account << ") doesn't have twelve (12) characters exactly in 'phone' field." << std::endl;
-                        return std::nullopt;
-                    }
-                }
-                else
-                {
-                    return std::nullopt;
-                }
-
-                if (!item.contains("age") || !item.at("age").is_number_integer())
-                {
-                    std::cerr << "Error: The student with account number: (" << account << ") does not contain 'age' field or 'age' field is not an number_int type." << std::endl;
-                    return std::nullopt;
-                }
-
-                if (item.contains("entryDate") && item.at("entryDate").is_string())
-                {
-                    std::string entryDate = item.at("entryDate").get<std::string>();
-                    if (entryDate.size() != 8)
-                    {
-                        std::cerr << "Error: The student account number (" << account << ") doesn't have eight (8) characters exactly in 'entryDate' field." << std::endl;
-                        return std::nullopt;
-                    }
-
-                    if (!isValidDateFormat(entryDate))
-                    {
-                        std::cerr << "Error: The student account number (" << account << ") has a format error in 'entryDate' field AAAAMMDD, please check." << std::endl;
-                        return std::nullopt;
-                    }
-                }
-                else
-                {
-                    return std::nullopt;
-                }
             }
 
             for (auto &item : studentsJson)
             {
                 Student st;
                 std::string account = item.at("account").get<std::string>();
+                std::memset(st.account, 0, sizeof(st.account));
                 std::memcpy(st.account, account.c_str(), account.size());
                 st.name = item.at("name").get<std::string>();
 
                 std::string phone = item.at("phone").get<std::string>();
+                std::memset(st.phoneNumber, 0, sizeof(st.phoneNumber));
                 std::memcpy(st.phoneNumber, phone.c_str(), phone.size());
 
                 st.age = item.at("age").get<uint32_t>(); // maybe can get error, so be careful
 
                 std::string entryDate = item.at("entryDate").get<std::string>();
+                std::memset(st.entryDate, 0, sizeof(st.entryDate));
                 std::memcpy(st.entryDate, entryDate.c_str(), entryDate.size());
+                students.push_back(st);
             }
         }
+        else
+        {
+            if (!verifyJSON(studentsJson))
+            {
+                return std::nullopt;
+            }
+            else
+            {
+                Student st;
+                std::string account = studentsJson.at("account").get<std::string>();
+                std::memset(st.account, 0, sizeof(st.account));
+                std::memcpy(st.account, account.c_str(), account.size());
+                st.name = studentsJson.at("name").get<std::string>();
+
+                std::string phone = studentsJson.at("phone").get<std::string>();
+                std::memset(st.phoneNumber, 0, sizeof(st.phoneNumber));
+                std::memcpy(st.phoneNumber, phone.c_str(), phone.size());
+
+                st.age = studentsJson.at("age").get<uint32_t>(); // maybe can get error, so be careful
+
+                std::string entryDate = studentsJson.at("entryDate").get<std::string>();
+                std::memset(st.entryDate, 0, sizeof(st.entryDate));
+                std::memcpy(st.entryDate, entryDate.c_str(), entryDate.size());
+                students.push_back(st);
+            }
+        }
+        return students;
     }
     catch (nl::json::parse_error &p)
     {
@@ -344,12 +308,87 @@ std::optional<std::vector<Student>> FileManager::jsonToStruct(std::string &jsonF
         return std::nullopt;
     }
 }
+bool FileManager::verifyJSON(nl::json &item)
+{
+
+    if (item.contains("account") && item.at("account").is_string())
+    {
+        std::string account = item.at("account").get<std::string>();
+        if (account.size() != 10)
+        {
+            std::cerr << "Error: The account number (" << account << ") doesn't have ten (10) characters exactly." << std::endl;
+            return false;
+        }
+        for (int i = 0; i < realIndex.size(); i++)
+        {
+            if (account == std::string(realIndex[i].account, 10))
+            {
+                std::cerr << "Error: The account: " << account << " already exists. There can't exists duplicates." << std::endl;
+                return false;
+            }
+        }
+    }
+    else
+    {
+        return false;
+    }
+
+    std::string account = item.at("account").get<std::string>();
+
+    if (!item.contains("name") || !item.at("name").is_string())
+    {
+        std::cerr << "Error: The student with account number: (" << account << ") does not contain 'name' field or 'name' field is not a string type." << std::endl;
+        return false;
+    }
+
+    if (item.contains("phone") && item.at("phone").is_string())
+    {
+        std::string phone = item.at("phone").get<std::string>();
+        if (phone.size() != 12)
+        {
+            std::cerr << "Error: The student account number (" << account << ") doesn't have twelve (12) characters exactly in 'phone' field." << std::endl;
+            return false;
+        }
+    }
+    else
+    {
+        return false;
+    }
+
+    if (!item.contains("age") || !item.at("age").is_number_integer())
+    {
+        std::cerr << "Error: The student with account number: (" << account << ") does not contain 'age' field or 'age' field is not an number_int type." << std::endl;
+        return false;
+    }
+
+    if (item.contains("entryDate") && item.at("entryDate").is_string())
+    {
+        std::string entryDate = item.at("entryDate").get<std::string>();
+        if (entryDate.size() != 8)
+        {
+            std::cerr << "Error: The student account number (" << account << ") doesn't have eight (8) characters exactly in 'entryDate' field." << std::endl;
+            return false;
+        }
+
+        if (!isValidDateFormat(entryDate))
+        {
+            std::cerr << "Error: The student account number (" << account << ") has a format error in 'entryDate' field AAAAMMDD, please check." << std::endl;
+            return false;
+        }
+    }
+    else
+    {
+        return false;
+    }
+
+    return true;
+}
 
 bool FileManager::isValidDateFormat(std::string &date)
 {
     for (auto &c : date)
     {
-        if (std::isdigit(c))
+        if (!std::isdigit(c))
             return false;
     }
 
@@ -364,4 +403,17 @@ bool FileManager::isValidDateFormat(std::string &date)
         return false;
 
     return true;
+}
+
+bool FileManager::addRecords(std::string &jsonFile, std::string &dataFile, std::string &indexFile)
+{
+    auto students = jsonToStruct(jsonFile);
+
+    if (!students.has_value())
+    {
+        std::cerr << "Error getting value." << std::endl;
+        return false;
+    }
+
+    
 }

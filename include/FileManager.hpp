@@ -6,6 +6,7 @@
 #include "Student.hpp"
 #include "Index.hpp"
 #include <optional>
+namespace nl = nlohmann;
 
 class FileManager
 {
@@ -14,6 +15,7 @@ private:
     std::optional<std::string> getIndxName(std::string fileName);
     std::vector<Index> realIndex;
     bool isValidDateFormat(std::string &date);
+    bool verifyJSON(nl::json &item);
 
 public:
     FileManager();
@@ -25,6 +27,7 @@ public:
     bool IndexManager(std::string &fileName, std::string &fileIndxName);
     bool saveIndex(std::vector<Index> &index, const std::string &indxFile);
     std::optional<std::vector<Student>> jsonToStruct(std::string &jsonFile);
+    bool addRecords(std::string &jsonFile, std::string &dataFile, std::string &indexFile);
 
     ~FileManager();
 };
