@@ -392,9 +392,11 @@ bool FileManager::addRecords(const std::string &jsonFile, const std::string &dat
 
     if (!dFile.is_open())
     {
-        std::cerr << "The file (" << dataFile << ") cannot open." << std::endl;
-        return false;
+        std::ofstream createFile(dataFile, std::ios::binary);
+        createFile.close();
     }
+    dFile.close();
+    std::fstream daFile(dataFile, std::ios::binary | std::ios::in | std::ios::out);
 
     if (!loadIndex(indexFile))
     {
@@ -419,9 +421,12 @@ bool FileManager::addRecords(const std::string &jsonFile, const std::string &dat
         PageManager pManager;
         Index idx;
         std::vector<char> record;
-        long long offset = dFile.tellp();
         record = serializeStudent(item);
-        pManager.pageControllerWrite(record, dFile);
+        if (!pManager.pageControllerWrite(record, daFile))
+        {
+            std::cerr << "Error: something went wrong." << std::endl;
+            return false;
+        }
         std::memset(idx.account, 0, sizeof(idx.account));
         std::memcpy(idx.account, item.account, sizeof(item.account));
 
@@ -548,7 +553,7 @@ bool FileManager::removeStudentByCode(const std::string &dataFile, const std::st
     {
         return false;
     }
-    
+
     for (auto &idx : realIndex)
     {
         std::string idxAccount(idx.account, sizeof(idx.account));
@@ -590,6 +595,7 @@ bool FileManager::updateStudent(const std::string &dataFile, const std::string &
 
     for (auto &st : students.value())
     {
+        PageManager pManager;
         std::string codeAccount(st.account, sizeof(st.account));
         auto index = binarySearch(codeAccount);
 
@@ -599,19 +605,18 @@ bool FileManager::updateStudent(const std::string &dataFile, const std::string &
             return false;
         }
 
-        if (!markInactive(dFile, index.value().offset))
+        if (!pManager.markInactivePage(index.value().offset, dFile))
         {
             std::cerr << "Error ocurred with student account: " << codeAccount << std::endl;
             return false;
         }
         std::vector<char> newRecord = serializeStudent(st);
-        dFile.seekp(0, std::ios::end);
-        long long nOffSet = dFile.tellp();
-        if (!dFile.write(newRecord.data(), newRecord.size()))
+        if (!pManager.pageControllerWrite(newRecord, dFile))
         {
-            std::cerr << "Error while writing update record of: " << codeAccount << std::endl;
-            return false;
+            std::cerr << "Error while writing record update." << std::endl;
         }
+
+        long long nOffSet = pManager.getAbsoluOffset();
 
         for (auto &idx : realIndex)
         {
@@ -625,13 +630,6 @@ bool FileManager::updateStudent(const std::string &dataFile, const std::string &
     }
 
     return saveIndex(realIndex, indexFile);
-}
-
-bool FileManager::markInactive(std::fstream &file, long long offset)
-{
-    file.seekp(offset + sizeof(uint32_t), std::ios::beg);
-    bool inactive = false;
-    return file.write(reinterpret_cast<const char *>(&inactive), sizeof(inactive)).good();
 }
 
 bool FileManager::cleanUp(const std::string &dataFile, const std::string &indexFile)
@@ -670,24 +668,27 @@ bool FileManager::cleanUp(const std::string &dataFile, const std::string &indexF
             return false;
         }
         std::string tempName = dataFile.substr(0, dotPos) + "_temp" + dataFile.substr(dotPos);
-        std::fstream tempFile(tempName, std::ios::binary | std::ios::out);
+        std::fstream tempFile(tempName, std::ios::binary | std::ios::in | std::ios::out | std::ios::trunc);
+        PageManager pManager;
 
         for (auto &idx : realIndex)
         {
             if (idx.isActive)
             {
                 long long offset = idx.offset;
-                uint32_t tSize;
-                dFile.seekg(offset, std::ios::beg);
-                dFile.read(reinterpret_cast<char *>(&tSize), sizeof(tSize));
+                auto buf = pManager.pageControllerRead(offset, dFile);
+                if (!buf.has_value())
+                {
+                    std::cerr << "Error: Buf doesn't have data." << std::endl;
+                    return false;
+                }
 
-                std::vector<char> buf(tSize + sizeof(uint32_t));
-
-                dFile.seekg(offset, std::ios::beg);
-                dFile.read(buf.data(), buf.size());
-
-                long long newOffSet = tempFile.tellp();
-                tempFile.write(buf.data(), buf.size());
+                if (!pManager.pageControllerWrite(buf.value(), tempFile))
+                {
+                    std::cerr << "Error: Error while writing file." << std::endl;
+                    return false;
+                }
+                long long newOffSet = pManager.getAbsoluOffset();
                 idx.offset = newOffSet;
             }
         }

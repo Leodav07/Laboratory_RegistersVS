@@ -19,7 +19,6 @@ private:
     bool isValidDateFormat(std::string &date);
     bool verifyJSON(nl::json &item, bool isUpdate = false);
     std::optional<Index> binarySearch(const std::string &accountSt);
-    bool markInactive(std::fstream &file, long long offset);
 
 public:
     FileManager() {};
