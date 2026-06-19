@@ -7,6 +7,7 @@
 #include "Index.hpp"
 #include <optional>
 #include "json.hpp"
+
 namespace nl = nlohmann;
 
 class FileManager
