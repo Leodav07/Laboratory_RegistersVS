@@ -1,0 +1,142 @@
+[
+    {
+        "account": "2020-00001",
+        "name": "Juan Carlos Perez Lopez",
+        "phone": "502-1234-567",
+        "age": 22,
+        "entryDate": "20200115"
+    },
+    {
+        "account": "2020-00002",
+        "name": "Maria Fernanda Garcia",
+        "phone": "502-2234-567",
+        "age": 21,
+        "entryDate": "20200120"
+    },
+    {
+        "account": "2020-00003",
+        "name": "Roberto Alejandro Mendoza Cifuentes",
+        "phone": "502-3234-567",
+        "age": 23,
+        "entryDate": "20200125"
+    },
+    {
+        "account": "2020-00004",
+        "name": "Ana Lucia Morales",
+        "phone": "502-4234-567",
+        "age": 20,
+        "entryDate": "20200201"
+    },
+    {
+        "account": "2020-00005",
+        "name": "Carlos Eduardo Ramirez Fuentes",
+        "phone": "502-5234-567",
+        "age": 24,
+        "entryDate": "20200205"
+    },
+    {
+        "account": "2020-00006",
+        "name": "Sofia Martinez",
+        "phone": "502-6234-567",
+        "age": 19,
+        "entryDate": "20200210"
+    },
+    {
+        "account": "2020-00007",
+        "name": "Diego Alejandro Vega Castillo",
+        "phone": "502-7234-567",
+        "age": 22,
+        "entryDate": "20200215"
+    },
+    {
+        "account": "2020-00008",
+        "name": "Valeria Hernandez Soto",
+        "phone": "502-8234-567",
+        "age": 21,
+        "entryDate": "20200220"
+    },
+    {
+        "account": "2020-00009",
+        "name": "Andres Felipe Lopez",
+        "phone": "502-9234-567",
+        "age": 23,
+        "entryDate": "20200225"
+    },
+    {
+        "account": "2020-00010",
+        "name": "Gabriela Alejandra Morales Reyes",
+        "phone": "502-1334-567",
+        "age": 20,
+        "entryDate": "20200301"
+    },
+    {
+        "account": "2020-00011",
+        "name": "Luis Fernando Gomez",
+        "phone": "502-2334-567",
+        "age": 22,
+        "entryDate": "20200305"
+    },
+    {
+        "account": "2020-00012",
+        "name": "Camila Patricia Diaz Rosales",
+        "phone": "502-3334-567",
+        "age": 19,
+        "entryDate": "20200310"
+    },
+    {
+        "account": "2020-00013",
+        "name": "Jose Manuel Castillo",
+        "phone": "502-4334-567",
+        "age": 24,
+        "entryDate": "20200315"
+    },
+    {
+        "account": "2020-00014",
+        "name": "Daniela Beatriz Cruz Mendez",
+        "phone": "502-5334-567",
+        "age": 21,
+        "entryDate": "20200320"
+    },
+    {
+        "account": "2020-00015",
+        "name": "Miguel Angel Torres",
+        "phone": "502-6334-567",
+        "age": 23,
+        "entryDate": "20200325"
+    },
+    {
+        "account": "2020-00016",
+        "name": "Paola Isabel Ramos Gutierrez",
+        "phone": "502-7334-567",
+        "age": 20,
+        "entryDate": "20200401"
+    },
+    {
+        "account": "2020-00017",
+        "name": "Fernando Jose Aguilar",
+        "phone": "502-8334-567",
+        "age": 22,
+        "entryDate": "20200405"
+    },
+    {
+        "account": "2020-00018",
+        "name": "Karla Vanessa Lopez Soto",
+        "phone": "502-9334-567",
+        "age": 21,
+        "entryDate": "20200410"
+    },
+    {
+        "account": "2020-00019",
+        "name": "Oscar Eduardo Ramirez",
+        "phone": "502-1434-567",
+        "age": 24,
+        "entryDate": "20200415"
+    },
+    {
+        "account": "2020-00020",
+        "name": "Brenda Lucia Hernandez Castro",
+        "phone": "502-2434-567",
+        "age": 19,
+        "entryDate": "20200420"
+    }
+]

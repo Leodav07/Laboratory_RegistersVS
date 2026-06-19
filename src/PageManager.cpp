@@ -34,6 +34,12 @@ bool PageManager::pageControllerWrite(std::vector<char> &record, std::fstream &d
         }
     }
 
+    if (record.size() > 496)
+    {
+        std::cerr << "Error: record too large to fit in a single page." << std::endl;
+        return false;
+    }
+
     int writePos = 496 - page.header.freeSpace;
     std::memcpy(page.data + writePos, record.data(), record.size());
     page.header.freeSpace -= record.size();
