@@ -541,16 +541,14 @@ bool FileManager::removeStudentByCode(const std::string &dataFile, const std::st
         return false;
     }
 
+    PageManager pManager;
     long long offset = st.value().offset;
 
-    bool inactive = false;
-    dFile.seekp(offset + sizeof(uint32_t), std::ios::beg);
-    if (!dFile.write(reinterpret_cast<const char *>(&inactive), sizeof(bool)))
+    if (!pManager.markInactivePage(offset, dFile))
     {
-        std::cerr << "Error while overwriting record status." << std::endl;
         return false;
     }
-
+    
     for (auto &idx : realIndex)
     {
         std::string idxAccount(idx.account, sizeof(idx.account));

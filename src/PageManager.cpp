@@ -70,7 +70,13 @@ bool PageManager::markInactivePage(long long offset, std::fstream &dFile)
     recordPointer += sizeof(uint32_t);
     bool inactive = false;
     *reinterpret_cast<bool *>(recordPointer) = inactive;
-    
+    size_t dataSize = 512 - sizeof(page.header);
+    page.header.crc = CRC32::CRC32::calc(reinterpret_cast<uint8_t *>(page.data), dataSize);
+
+    dFile.seekp(page.header.pageId * 512, std::ios::beg);
+    dFile.write(reinterpret_cast<const char *>(&page), sizeof(page));
+
+    return true;
 }
 
 bool PageManager::verifyCRC(long long offset, std::fstream &dFile)
