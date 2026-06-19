@@ -3,6 +3,7 @@
 #include <iostream>
 #include <json.hpp>
 #include <filesystem>
+#include "PageManager.hpp"
 
 namespace nl = nlohmann;
 
@@ -387,7 +388,7 @@ bool FileManager::isValidDateFormat(std::string &date)
 
 bool FileManager::addRecords(const std::string &jsonFile, const std::string &dataFile, const std::string &indexFile)
 {
-    std::ofstream dFile(dataFile, std::ios::binary | std::ios::app);
+    std::fstream dFile(dataFile, std::ios::binary | std::ios::in | std::ios::out);
 
     if (!dFile.is_open())
     {
@@ -415,16 +416,16 @@ bool FileManager::addRecords(const std::string &jsonFile, const std::string &dat
 
     for (const auto &item : students.value())
     {
+        PageManager pManager;
         Index idx;
         std::vector<char> record;
         long long offset = dFile.tellp();
         record = serializeStudent(item);
-        dFile.write(record.data(), record.size());
-
+        pManager.pageControllerWrite(record, dFile);
         std::memset(idx.account, 0, sizeof(idx.account));
         std::memcpy(idx.account, item.account, sizeof(item.account));
 
-        idx.offset = offset;
+        idx.offset = pManager.getAbsoluOffset();
         idx.size = record.size();
         idx.isActive = true;
 
@@ -467,7 +468,7 @@ std::optional<Index> FileManager::binarySearch(const std::string &accountSt)
 
 std::optional<Student> FileManager::searchByCode(const std::string &dataFile, const std::string &codeAccount, const std::string &indexFile)
 {
-    std::ifstream dFile(dataFile, std::ios::binary);
+    std::fstream dFile(dataFile, std::ios::binary | std::ios::in | std::ios::out);
 
     if (!dFile.is_open())
     {
@@ -493,18 +494,18 @@ std::optional<Student> FileManager::searchByCode(const std::string &dataFile, co
         return std::nullopt;
     }
 
+    PageManager pManager;
+
     long long offset = idxSt.value().offset;
-    Student st;
-    uint32_t tSize;
-    dFile.seekg(offset, std::ios::beg);
-    dFile.read(reinterpret_cast<char *>(&tSize), sizeof(tSize));
 
-    std::vector<char> buf(tSize + sizeof(uint32_t));
+    auto buf = pManager.pageControllerRead(offset, dFile);
+    if (!buf.has_value())
+    {
+        std::cerr << "Error: Something went wrong while reading file..." << std::endl;
+        return std::nullopt;
+    }
 
-    dFile.seekg(offset, std::ios::beg);
-    dFile.read(buf.data(), buf.size());
-
-    return deserializeStudent(buf);
+    return deserializeStudent(buf.value());
 }
 
 bool FileManager::removeStudentByCode(const std::string &dataFile, const std::string &codeAccount, const std::string &indexFile)

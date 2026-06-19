@@ -2,6 +2,7 @@
 #include <string>
 #include <cstdint>
 
+
 struct Student
 {
     bool isActive = true;
